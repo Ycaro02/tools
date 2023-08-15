@@ -27,7 +27,7 @@ else
 		EXT=$(cat $TMP3)
 		for (( i=1; i<=$MAX; i++ ))
 		do
-			if [ ${i} -lt 9 ]
+			if [ ${i} -lt 10 ]
 			then
 				mv ${FIRST}0${i}${SECOND} ${NEW}0${i}${EXT}
 			else
