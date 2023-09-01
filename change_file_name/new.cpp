@@ -50,6 +50,7 @@ void rename_file(std::string str, std::string new_name, size_t find, char **envp
     std::string cmd = "/usr/bin/mv";
     std::string first = str.substr(0, find);
     std::string second = str.substr(find + 2);
+    
     size_t ext_pos = str.rfind('.');
     std::string ext = str.substr(ext_pos);
 
@@ -87,7 +88,7 @@ void rename_file(std::string str, std::string new_name, size_t find, char **envp
 
 int main(int argc, char **argv, char **envp)
 {
-    if (argc <= 3 || argc > 4)
+    if (argc != 4 && argc != 5)
     {
         std::cout << "Error 1 argument expected : nb_file\n";
         std::cout << "Error 2 argument expected : 1st file name\n";
