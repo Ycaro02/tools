@@ -78,7 +78,17 @@ static void free_all(char **moove, int nb)
     free(moove);
 }
 
-static void rename_file(std::string str, std::string new_name, size_t find, char **envp, int nb, bool finale)
+static bool check_file(std::string file)
+{
+    if (access(file.c_str(), F_OK) != 0)
+    {
+        std::cout << "Access F_OK return error on file : " << file << "\n";
+        return (false);
+    }
+    return (true);
+}
+
+static bool rename_file(std::string str, std::string new_name, size_t find, char **envp, int nb, bool finale)
 {
     std::string cmd = "/usr/bin/mv";
     std::string first = str.substr(0, find);
@@ -96,7 +106,11 @@ static void rename_file(std::string str, std::string new_name, size_t find, char
     std::string old_str = first + number + second;
     if (finale == true)
         old_str = str;
-    
+    if (check_file(old_str) == false)
+    {
+        std::cout << "Error file : " << old_str << "not found\n";
+        return false;
+    }
     std::string new_str = new_name + number + ext;
     
     char **moove = NULL;
@@ -104,12 +118,13 @@ static void rename_file(std::string str, std::string new_name, size_t find, char
     if (moove == NULL)
     {
         std::cout << "Malloc error\n";
-        return ;
+        return false;
     }
     int pid = fork();
     if (pid == 0)
          execve(cmd.c_str(), moove, envp);
     free_all(moove, 3);
+    return (true);
 }
 
 int main(int argc, char **argv, char **envp)
@@ -152,9 +167,15 @@ int main(int argc, char **argv, char **envp)
     while (i <= max)
     {
         if (i == max && final_file.length() > 0)
-            rename_file(final_file, argv[3], find, envp, i, true);
+        {
+            if (rename_file(final_file, argv[3], find, envp, i, true) == false)
+                return (1);
+        }
         else
-            rename_file(str, argv[3], find, envp, i, false);
+        {
+            if (rename_file(str, argv[3], find, envp, i, false) == false)
+                return (1);
+        }
         i++;
     }
     return (0);
