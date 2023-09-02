@@ -57,6 +57,27 @@ static void fill_str(char *dest, const char* from)
     dest[i] = '\0';
 }
 
+static char** build_cmd(std::string &cmd, std::string &old_str, std::string &new_str)
+{
+    char **moove = NULL;
+    moove = (char **)malloc(sizeof(char*) * 4);
+    moove[0] = (char *)malloc(sizeof(char) * cmd.length() + 1);
+    fill_str(moove[0], cmd.c_str());
+    moove[1] = (char *)malloc(sizeof(char) * old_str.length() + 1);
+    fill_str(moove[1], old_str.c_str());
+    moove[2] = (char *)malloc(sizeof(char) * new_str.length() + 1);
+    fill_str(moove[2], new_str.c_str());
+    moove[3] = NULL;
+    return (moove);
+}
+
+static void free_all(char **moove, int nb)
+{
+    for (int i = 0; i <= nb; i++)
+        free(moove[i]);
+    free(moove);
+}
+
 static void rename_file(std::string str, std::string new_name, size_t find, char **envp, int nb, bool finale)
 {
     std::string cmd = "/usr/bin/mv";
@@ -78,24 +99,17 @@ static void rename_file(std::string str, std::string new_name, size_t find, char
     
     std::string new_str = new_name + number + ext;
     
-    char **moove;
-    moove = (char **)malloc(sizeof(char*) * 4);
-    moove[0] = (char *)malloc(sizeof(char) * cmd.length() + 1);
-    fill_str(moove[0], cmd.c_str());
-    moove[1] = (char *)malloc(sizeof(char) * old_str.length() + 1);
-    fill_str(moove[1], old_str.c_str());
-    moove[2] = (char *)malloc(sizeof(char) * new_str.length() + 1);
-    fill_str(moove[2], new_str.c_str());
-    moove[3] = NULL;
-  
+    char **moove = NULL;
+    moove = build_cmd(cmd, old_str, new_str);
+    if (moove == NULL)
+    {
+        std::cout << "Malloc error\n";
+        return ;
+    }
     int pid = fork();
     if (pid == 0)
          execve(cmd.c_str(), moove, envp);
-    free(moove[0]);
-    free(moove[1]);
-    free(moove[2]);
-    free(moove[3]);
-    free(moove);
+    free_all(moove, 3);
 }
 
 int main(int argc, char **argv, char **envp)
@@ -109,7 +123,7 @@ int main(int argc, char **argv, char **envp)
         return (1);
     }
     bool reverse = false;
-    if (argc == 3 )
+    if (argc == 5 )
     {
         if (reverse_search(argv[4]) == true);
             reverse = true;    
