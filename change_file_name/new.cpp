@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <dirent.h>
 
-bool reverse_search(std::string rev)
+static bool reverse_search(std::string rev)
 {
         if (rev == "--reverse")
             return true;
@@ -16,7 +16,19 @@ bool reverse_search(std::string rev)
         }
 }
 
-std::string find_final(std::string directory)
+static bool search_final(std::string str)
+{
+    if (str.find("FINAL") <= str.length())
+        return (true);
+    if (str.find("FiNAL") <= str.length())
+        return (true);
+    if (str.find("final") <= str.length())
+        return (true);
+    return (false);
+}
+
+
+static std::string find_final(std::string directory)
 {
         struct dirent *my_dir;
         std::string all_name;
@@ -25,7 +37,7 @@ std::string find_final(std::string directory)
         while ((my_dir = readdir(dir)) != NULL)
         {
                 str = my_dir->d_name;
-                if (str.find("FINAL") <= str.length())
+                if (search_final(str) == true)
                         return str;
         }
         closedir(dir);
@@ -34,7 +46,7 @@ std::string find_final(std::string directory)
 }
 
 
-void fill_str(char *dest, const char* from)
+static void fill_str(char *dest, const char* from)
 {
     int i = 0;
     while (from  && from[i])
@@ -45,7 +57,7 @@ void fill_str(char *dest, const char* from)
     dest[i] = '\0';
 }
 
-void rename_file(std::string str, std::string new_name, size_t find, char **envp, int nb, bool finale)
+static void rename_file(std::string str, std::string new_name, size_t find, char **envp, int nb, bool finale)
 {
     std::string cmd = "/usr/bin/mv";
     std::string first = str.substr(0, find);
@@ -61,12 +73,12 @@ void rename_file(std::string str, std::string new_name, size_t find, char **envp
         number =  std::to_string(nb);
 
     std::string old_str = first + number + second;
-    std::string new_str = new_name + number + ext;
-    char **moove;
-    int i = 1;
     if (finale == true)
         old_str = str;
-
+    
+    std::string new_str = new_name + number + ext;
+    
+    char **moove;
     moove = (char **)malloc(sizeof(char*) * 4);
     moove[0] = (char *)malloc(sizeof(char) * cmd.length() + 1);
     fill_str(moove[0], cmd.c_str());
